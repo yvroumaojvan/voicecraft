@@ -46,9 +46,11 @@ cp "$BUILD/resources.apk" "$OUT/voicecraft-unsigned.apk"
 echo "==> 对齐..."
 "$ZIPALIGN" -f 4 "$OUT/voicecraft-unsigned.apk" "$OUT/voicecraft-aligned.apk"
 
-# 6. 签名
+# 6. 签名（keystore 持久化，保证后续升级签名一致免卸载）
 echo "==> 签名..."
-KS="$OUT/voicecraft.keystore"
+KEY_DIR="$(pwd)/keystore"
+mkdir -p "$KEY_DIR"
+KS="$KEY_DIR/voicecraft.keystore"
 if [ ! -f "$KS" ]; then
     keytool -genkeypair -v -keystore "$KS" -alias voicecraft -keyalg RSA -keysize 2048 \
         -validity 10000 -storepass 123456 -keypass 123456 \
