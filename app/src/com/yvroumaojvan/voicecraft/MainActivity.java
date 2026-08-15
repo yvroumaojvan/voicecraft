@@ -43,6 +43,8 @@ public class MainActivity extends Activity {
 
     private static final String PREFS = "voicecraft";
     private static final String KEY_HISTORY = "history";
+    private static final String KEY_FISH_KEY = "fish_key";
+    private static final String KEY_FISH_VOICE = "fish_voice";
 
     private EditText inputText;
     private TextView rateLabel;
@@ -53,6 +55,11 @@ public class MainActivity extends Activity {
     private Button saveBtn;
     private ListView historyList;
     private LinearLayout voiceChips;
+
+    // Fish Audio 引擎
+    private android.widget.Switch fishSwitch;
+    private EditText fishKeyInput;
+    private EditText fishVoiceInput;
 
     private int selectedVoice = 0;
     private MediaPlayer player;
@@ -90,6 +97,24 @@ public class MainActivity extends Activity {
         saveBtn = findViewById(R.id.btn_save);
         historyList = findViewById(R.id.history_list);
         voiceChips = findViewById(R.id.voice_chips);
+        fishSwitch = findViewById(R.id.fish_switch);
+        fishKeyInput = findViewById(R.id.fish_key);
+        fishVoiceInput = findViewById(R.id.fish_voice);
+
+        // 恢复 Fish Audio 设置
+        SharedPreferences sp = getSharedPreferences(PREFS, MODE_PRIVATE);
+        fishKeyInput.setText(sp.getString(KEY_FISH_KEY, ""));
+        fishVoiceInput.setText(sp.getString(KEY_FISH_VOICE, ""));
+        fishSwitch.setChecked(sp.getBoolean("fish_on", false));
+        fishSwitch.setOnCheckedChangeListener(new android.widget.CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(android.widget.CompoundButton buttonView, boolean isChecked) {
+                getSharedPreferences(PREFS, MODE_PRIVATE).edit().putBoolean("fish_on", isChecked).apply();
+                if (isChecked) {
+                    toast("🐟 Fish 模式：合成时用莫提斯音色（需挂 VPN）");
+                }
+            }
+        });
 
         buildVoiceChips();
         setupRateBar();
@@ -199,13 +224,32 @@ public class MainActivity extends Activity {
         }
         statusText.setText("⏳ 正在合成…");
         playBtn.setEnabled(false);
-        final String voice = Voices.ID[selectedVoice];
         final String rate = ratePercent();
-        final String label = Voices.LABEL[selectedVoice];
+        final String edgeVoice = Voices.ID[selectedVoice];
+        final String edgeLabel = Voices.LABEL[selectedVoice];
+
+        // Fish 模式判定
+        final String fishKey = fishKeyInput.getText().toString().trim();
+        final String fishVoice = fishVoiceInput.getText().toString().trim();
+        final boolean useFish = fishSwitch.isChecked() && !fishKey.isEmpty() && !fishVoice.isEmpty();
+        if (fishSwitch.isChecked() && (fishKey.isEmpty() || fishVoice.isEmpty())) {
+            toast("Fish 模式需要填 API Key 和音色 ID（在设置区）");
+            return;
+        }
+
         bg.execute(new Runnable() {
             @Override public void run() {
                 try {
-                    byte[] mp3 = EdgeTTS.synthesize(voice, currentText, rate);
+                    byte[] mp3;
+                    final String label;
+                    if (useFish) {
+                        mp3 = FishTTS.synthesize(fishKey, fishVoice, currentText,
+                            FishTTS.speedFromRate(rate));
+                        label = "🐟 莫提斯";
+                    } else {
+                        mp3 = EdgeTTS.synthesize(edgeVoice, currentText, rate);
+                        label = edgeLabel;
+                    }
                     final File f = new File(getFilesDir(),
                         "voice_" + new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date()) + ".mp3");
                     FileOutputStream fos = new FileOutputStream(f);
@@ -422,6 +466,15 @@ public class MainActivity extends Activity {
 
     private int dp(int v) {
         return Math.round(v * getResources().getDisplayMetrics().density);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        SharedPreferences.Editor ed = getSharedPreferences(PREFS, MODE_PRIVATE).edit();
+        ed.putString(KEY_FISH_KEY, fishKeyInput.getText().toString().trim());
+        ed.putString(KEY_FISH_VOICE, fishVoiceInput.getText().toString().trim());
+        ed.apply();
     }
 
     @Override

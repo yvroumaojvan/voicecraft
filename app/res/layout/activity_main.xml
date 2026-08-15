@@ -149,6 +149,74 @@
                     android:progress="10" />
             </LinearLayout>
 
+            <!-- Fish Audio 引擎卡片 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/card_bg"
+                android:elevation="3dp"
+                android:padding="16dp"
+                android:layout_marginTop="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="🐟 Fish Audio 引擎（莫提斯音色）"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_second" />
+
+                    <Switch
+                        android:id="@+id/fish_switch"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+
+                <EditText
+                    android:id="@+id/fish_key"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:hint="API Key（fish.audio → 设置 → API Keys 生成）"
+                    android:textSize="13sp"
+                    android:textColor="@color/text_main"
+                    android:textColorHint="@color/text_faint"
+                    android:background="@drawable/input_bg"
+                    android:padding="10dp"
+                    android:inputType="text"
+                    android:singleLine="true" />
+
+                <EditText
+                    android:id="@+id/fish_voice"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:hint="音色 ID（莫提斯音色详情页获取）"
+                    android:textSize="13sp"
+                    android:textColor="@color/text_main"
+                    android:textColorHint="@color/text_faint"
+                    android:background="@drawable/input_bg"
+                    android:padding="10dp"
+                    android:inputType="text"
+                    android:singleLine="true" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="💡 免费模型 s2.1-pro-free（$0）· 使用时需挂 VPN · 开关开启后合成走莫提斯音色"
+                    android:textSize="11sp"
+                    android:textColor="@color/text_faint" />
+            </LinearLayout>
+
             <!-- 合成按钮 -->
             <Button
                 android:id="@+id/btn_synthesize"
