@@ -1,0 +1,43 @@
+name: Build APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install zip
+        run: sudo apt-get update && sudo apt-get install -y zip
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install platform & build-tools
+        run: |
+          sdkmanager "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Build APK
+        run: bash app/build.sh
+        env:
+          ANDROID_JAR: ${{ env.ANDROID_HOME }}/platforms/android-35/android.jar
+          AAPT: ${{ env.ANDROID_HOME }}/build-tools/35.0.0/aapt
+          D8: ${{ env.ANDROID_HOME }}/build-tools/35.0.0/d8
+          ZIPALIGN: ${{ env.ANDROID_HOME }}/build-tools/35.0.0/zipalign
+          APKSIGNER: ${{ env.ANDROID_HOME }}/build-tools/35.0.0/apksigner
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: voicecraft-apk
+          path: app/out/voicecraft.apk
+          if-no-files-found: error
